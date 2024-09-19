@@ -1,3 +1,7 @@
+// File: GameBoard.cpp
+// Author: Josh Lovell
+// Desc: Implementation of board simulation
+
 #include "GameBoard.h"
 #include <iostream>
 #include <string>

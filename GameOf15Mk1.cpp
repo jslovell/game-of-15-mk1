@@ -1,6 +1,13 @@
 // File: GameOf15Mk1.cpp
 // Author: Josh Lovell
-// Desc: Hopefully this wins the game!
+// Desc: Logical AI designed to win (maybe)
+
+// Priorities of the AI:
+// 1. Obey game rules
+// 2. Winning in one move
+// 3. Preventing loss by blocking
+// 4. Checkmate move
+// 5. Just play something
 
 #include <algorithm>
 #include <iostream>

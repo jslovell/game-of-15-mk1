@@ -1,3 +1,7 @@
+// File: GameBoard.h
+// Author: Josh Lovell
+// Desc: Outline of board simulation
+
 #pragma once
 #include <iostream>
 using std::string;
