@@ -1,5 +1,6 @@
 #include "GameBoard.h"
 #include <iostream>
+#include <string>
 using std::string;
 
 GameBoard::GameBoard() {
@@ -43,4 +44,27 @@ string GameBoard::toString() {
 	}
 	result += ")";
 	return result;
+}
+
+bool GameBoard::isGameWon() {
+	int intBoard[9];
+	for (int i = 0; i < 9; i++) {
+		if (board[i] != "-") {
+			intBoard[i] = stoi(board[i]);
+		} else {
+			intBoard[i] = -100;
+		}
+	}
+	if (intBoard[0] + intBoard[1] + intBoard[2] == 15 ||
+		intBoard[3] + intBoard[4] + intBoard[5] == 15 ||
+		intBoard[6] + intBoard[7] + intBoard[8] == 15 ||
+		intBoard[0] + intBoard[3] + intBoard[6] == 15 ||
+		intBoard[1] + intBoard[4] + intBoard[7] == 15 ||
+		intBoard[2] + intBoard[5] + intBoard[8] == 15 ||
+		intBoard[0] + intBoard[4] + intBoard[8] == 15 ||
+		intBoard[2] + intBoard[4] + intBoard[6] == 15) {
+		return true;
+	} else {
+		return false;
+	}
 }

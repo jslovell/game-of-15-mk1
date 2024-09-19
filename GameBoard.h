@@ -11,4 +11,5 @@ public:
 	string get(int);
 	void move(string, int);
 	string toString();
+	bool isGameWon();
 };
