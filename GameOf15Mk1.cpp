@@ -36,6 +36,7 @@ bool checkmateHelper(GameBoard, vector<string>, vector<string>);
 int findCheckmate(GameBoard, int, vector<string>, vector<string>);
 int findCheckmate(GameBoard, vector<string>, vector<string>);
 void placeRandom(GameBoard&, bool);
+void placeAt(GameBoard&, int);
 
 // Main function
 int main() {
@@ -77,12 +78,19 @@ int main() {
         while (!hasNewBoard) {
             cout << "Enter board string: ";
             cin >> input;
-            try {
-                oldBoard = mainBoard;
-                mainBoard = GameBoard(input);
-                hasNewBoard = true;
-            } catch (const std::exception& e) {
-                cout << e.what() << " You fool, learn to type!\n";
+            if (input == "debug") {
+                cout << mainBoard.get(0) << mainBoard.get(1) << mainBoard.get(2) << "\n";
+                cout << mainBoard.get(3) << mainBoard.get(4) << mainBoard.get(5) << "\n";
+                cout << mainBoard.get(6) << mainBoard.get(7) << mainBoard.get(8) << "\n";
+            } else {
+                try {
+                    oldBoard = mainBoard;
+                    mainBoard = GameBoard(input);
+                    hasNewBoard = true;
+                }
+                catch (const std::exception& e) {
+                    cout << e.what() << " You fool, learn to type!\n";
+                }
             }
         }
 
@@ -151,8 +159,8 @@ int main() {
                     removePiece(nextMovePiece);
                     cout << "Blocked & checkmate!\n";
                 } else {
-                    mainBoard.move(ourPieces.front(), spaceInQuestion);
-                    removePiece(ourPieces.front());
+                    // This needs idiot proof
+                    placeAt(mainBoard, spaceInQuestion);
                     cout << "Block opponent.\n";
                 }
             }
@@ -350,4 +358,20 @@ void placeRandom(GameBoard& board, bool trueRandom) {
         return;
     }
     cout << "The board is full.\n";
+}
+
+void placeAt(GameBoard& board, int space) {
+    for (string piece : ourPieces) {
+        GameBoard tempBoard = board;
+        tempBoard.move(piece, space);
+        vector<string> tempOurPieces = ourPieces;
+        removePiece(piece, tempOurPieces);
+        if (findWinSpace(tempBoard, theirPieces) == -1 && findCheckmate(tempBoard, theirPieces, tempOurPieces) == -1) {
+            board.move(piece, space);
+            removePiece(piece);
+            return;
+        }
+    }
+    cout << "I've got a bad feeling about this.\n";
+    placeRandom(board, true);
 }
