@@ -1,6 +1,6 @@
-// File: GameOf15Mk1.cpp
+// File: GameOf15Auto.cpp
 // Author: Josh Lovell
-// Desc: Logical AI designed to win (maybe)
+// Desc: AI plays iteself many times for statistical purposes
 
 // Priorities of the AI:
 // 1. Obey game rules
@@ -8,7 +8,7 @@
 // 3. Preventing loss by blocking
 // 4. Checkmate move
 // 5. Just play something
-/*
+/**/
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -19,6 +19,11 @@ using std::cout;
 using std::string;
 using std::vector;
 
+// AUTO SETTINGS
+int totalGames = 10;
+string openingPieces[] = { "1", "3", "5" };
+int openingSpaces[] = { 0, 1, 4 };
+
 // Global variables
 bool isOdd;
 GameBoard mainBoard;
@@ -27,6 +32,7 @@ vector<string> ourPieces;
 vector<string> theirPieces;
 string nextMovePiece;
 int nextMoveSpace;
+bool gameOver;
 
 // Function declarations
 void removePiece(string, vector<string>&);
@@ -39,150 +45,146 @@ void placeRandom(GameBoard&, bool);
 void placeAt(GameBoard&, int);
 
 // Main function
-int notmain() {
+int main() {
     cout << "=========================\n";
-    cout << "|      JOSHUA mk1       |\n";
+    cout << "|    JOSHUA mk1 auto    |\n";
     cout << "| Shall we play a game? |\n";
     cout << "=========================\n\n";
 
-    string input;
-    bool gameOver = false;
     vector<string> evenPieces = { "2", "4", "6", "8", "0" };
     vector<string> oddPieces = { "5", "3", "1", "7", "9" };
+    vector<string> swapPieces;
     srand(time(0));
 
-    // Pick a side
-    bool hasChosenSide = false;
-    while (!hasChosenSide) {
-        cout << "Are we even or odd? (e/o): ";
-        cin >> input;
-        if (input == "e" || input == "E") {
-            isOdd = false;
-            cout << "We are even!\n\n";
-            ourPieces = evenPieces;
-            theirPieces = oddPieces;
-            hasChosenSide = true;
-        }
-        else if (input == "o" || input == "O") {
-            isOdd = true;
-            cout << "We are odd!\n\n";
-            ourPieces = oddPieces;
-            theirPieces = evenPieces;
-            hasChosenSide = true;
-        }
-    }
+    // MEGA MEGA LOOP
+    for (string openPiece : openingPieces) {
+        for (int openSpace : openingSpaces) {
+            // MEGA LOOP
+            int oddWinLoss[2] = { 0, 0 };
+            int evenWinLoss[2] = { 0, 0 };
+            int gameNumber;
+            for (gameNumber = 0; gameNumber < totalGames; gameNumber++) {
+                // Pick a side (odd goes first)
+                isOdd = true;
+                ourPieces = oddPieces;
+                theirPieces = evenPieces;
+                oldBoard = GameBoard();
+                mainBoard = GameBoard();
+                gameOver = false;
 
-    // Main game loop
-    while (!gameOver) {
-        bool hasNewBoard = false;
-        while (!hasNewBoard) {
-            cout << "Enter board string: ";
-            cin >> input;
-            if (input == "debug") {
-                cout << mainBoard.get(0) << mainBoard.get(1) << mainBoard.get(2) << "\n";
-                cout << mainBoard.get(3) << mainBoard.get(4) << mainBoard.get(5) << "\n";
-                cout << mainBoard.get(6) << mainBoard.get(7) << mainBoard.get(8) << "\n";
-            } else {
-                try {
+                // Main game loop
+                while (!gameOver) {
+                    // Check for cheating
+                    int numChanges = 0;
+                    for (int i = 0; i < 9; i++) {
+                        if (oldBoard.get(i) != mainBoard.get(i)) {
+                            numChanges++;
+                        }
+                    }
+                    //cout << "Old: " << oldBoard.toString() << "\n";
+                    //cout << "New: " << mainBoard.toString() << "\n";
+                    //cout << "Changes: " << numChanges << "\n";
+                    if (numChanges > 1) {
+                        cout << "CHEATER CHEATER PUMPKIN EATER (too many moves)\n";
+                    }
+                    /*
+                    for (string p : ourPieces)
+                        cout << p << " ";
+                    cout << ": ";
+                    for (string p : theirPieces)
+                        cout << p << " ";
+                    */
                     oldBoard = mainBoard;
-                    mainBoard = GameBoard(input);
-                    hasNewBoard = true;
-                }
-                catch (const std::exception& e) {
-                    cout << e.what() << " You fool, learn to type!\n";
+                    //cout << "\nPondering next move...\n";
+
+                    // Case: the game is already over
+                    if (mainBoard.isGameWon()) {
+                        //cout << "The game is over.\n";
+                        gameOver = true;
+                    }
+
+                    // Case: we move first
+                    else if (mainBoard.toString() == "(-,-,-,-,-,-,-,-,-)") {
+                        if (isOdd) {
+                            mainBoard.move(openPiece, openSpace);
+                            removePiece(openPiece);
+                        }
+                        else {
+                            mainBoard.move("8", 4);
+                            removePiece("8");
+                        }
+                        //cout << "Opening move.\n";
+                    }
+
+                    // Case: possible win
+                    else if (findWinSpace(mainBoard, ourPieces) != -1) {
+                        mainBoard.move(nextMovePiece, nextMoveSpace);
+                        removePiece(nextMovePiece);
+                        //cout << "We win!\n";
+                        if (isOdd) {
+                            oddWinLoss[0]++;
+                            evenWinLoss[1]++;
+                        }
+                        else {
+                            evenWinLoss[0]++;
+                            oddWinLoss[1]++;
+                        }
+                        gameOver = true;
+                    }
+
+                    // Case: possible loss
+                    else if (findWinSpace(mainBoard, theirPieces) != -1) {
+                        int spaceInQuestion = nextMoveSpace;
+                        if (mainBoard.get(nextMoveSpace) != "-") {
+                            // They will place 0
+                            placeRandom(mainBoard, true);
+                            //cout << "We're doomed!\n";
+                        }
+                        else {
+                            // Try to counter and checkmate
+                            if (findCheckmate(mainBoard, nextMoveSpace, ourPieces, theirPieces) != -1) {
+                                mainBoard.move(nextMovePiece, nextMoveSpace);
+                                removePiece(nextMovePiece);
+                                //cout << "Blocked & checkmate!\n";
+                            }
+                            else {
+                                // This needs idiot proof
+                                placeAt(mainBoard, spaceInQuestion);
+                                //cout << "Block opponent.\n";
+                            }
+                        }
+                    }
+
+                    // Case: possible checkmate
+                    else if (findCheckmate(mainBoard, ourPieces, theirPieces) != -1) {
+                        mainBoard.move(nextMovePiece, nextMoveSpace);
+                        removePiece(nextMovePiece);
+                        //cout << "Checkmate!\n";
+                    }
+
+                    // Case: outcome uncertain
+                    else {
+                        placeRandom(mainBoard, false);
+                        //cout << "Random move.\n";
+                    }
+
+                    // Output board with our move
+                    //cout << "Current Board: " << mainBoard.toString() << "\n\n";
+
+                    // Switch sides
+                    isOdd = !isOdd;
+                    swapPieces = ourPieces;
+                    ourPieces = theirPieces;
+                    theirPieces = swapPieces;
                 }
             }
-        }
 
-        // Check for cheating
-        int numChanges = 0;
-        for (int i = 0; i < 9; i++) {
-            if (oldBoard.get(i) != mainBoard.get(i)) {
-                numChanges++;
-                try {
-                    removePiece(mainBoard.get(i));
-                } catch (const std::exception& e) {
-                    cout << "CHEATER CHEATER PUMPKIN EATER (invalid move)\n";
-                }
-            }
+            // Output win loss
+            cout << "\"" << openPiece << "\" placed at " << openSpace << "\n";
+            cout << "Odd  - " << oddWinLoss[0] << " : " << oddWinLoss[1] << " : " << (gameNumber - oddWinLoss[0] - evenWinLoss[0]) << "\n";
+            cout << "Even - " << evenWinLoss[0] << " : " << evenWinLoss[1] << " : " << (gameNumber - oddWinLoss[0] - evenWinLoss[0]) << "\n";
         }
-        cout << "Old: " << oldBoard.toString() << "\n";
-        cout << "New: " << mainBoard.toString() << "\n";
-        //cout << "Changes: " << numChanges << "\n";
-        if (numChanges > 1) {
-            cout << "CHEATER CHEATER PUMPKIN EATER (too many moves)\n";
-        }
-        for (string p : ourPieces)
-            cout << p << " ";
-        cout << ": ";
-        for (string p : theirPieces)
-            cout << p << " ";
-        cout << "\nPondering next move...\n";
-
-        // Case: the game is already over
-        if (mainBoard.isGameWon()) {
-            cout << "The game is over.\n";
-            gameOver = true;
-        }
-
-        // Case: we move first
-        else if (mainBoard.toString() == "(-,-,-,-,-,-,-,-,-)") {
-            if (isOdd) {
-                mainBoard.move("1", 4);
-                removePiece("1");
-            } else {
-                mainBoard.move("8", 4);
-                removePiece("8");
-            }
-            cout << "Opening move.\n";
-        }
-
-        // Case: possible win
-        else if (findWinSpace(mainBoard, ourPieces) != -1) {
-            mainBoard.move(nextMovePiece, nextMoveSpace);
-            removePiece(nextMovePiece);
-            cout << "We win!\n";
-            gameOver = true;
-        }
-
-        // Case: possible loss
-        else if (findWinSpace(mainBoard, theirPieces) != -1) {
-            int spaceInQuestion = nextMoveSpace;
-            if (mainBoard.get(nextMoveSpace) != "-") {
-                // They will place 0
-                placeRandom(mainBoard, true);
-                cout << "We're doomed!\n";
-            } else {
-                // Try to counter and checkmate
-                if (findCheckmate(mainBoard, nextMoveSpace, ourPieces, theirPieces) != -1) {
-                    mainBoard.move(nextMovePiece, nextMoveSpace);
-                    removePiece(nextMovePiece);
-                    cout << "Blocked & checkmate!\n";
-                } else {
-                    // This needs idiot proof
-                    placeAt(mainBoard, spaceInQuestion);
-                    cout << "Block opponent.\n";
-                }
-            }
-        }
-
-        // Case: possible checkmate
-        else if (findCheckmate(mainBoard, ourPieces, theirPieces) != -1) {
-            mainBoard.move(nextMovePiece, nextMoveSpace);
-            removePiece(nextMovePiece);
-            cout << "Checkmate!\n";
-        }
-
-        // Case: outcome uncertain
-        else {
-            placeRandom(mainBoard, false);
-            cout << "Random move.\n";
-        }
-
-        // Output board with our move
-        cout << "Current Board: " << mainBoard.toString() << "\n\n";
     }
-    return 0;
 }
 
 // Function definitions
@@ -230,6 +232,7 @@ int findWinSpace(GameBoard board, vector<string> playset) {
             }
         }
     }
+    return -1;
 }
 
 bool checkmateHelper(GameBoard board, vector<string> playsetAtt, vector<string> playsetDef) {
@@ -354,10 +357,11 @@ void placeRandom(GameBoard& board, bool trueRandom) {
         int space = openSpaces[rand() % openSpaces.size()];
         board.move(ourPieces.front(), space);
         removePiece(ourPieces.front());
-        cout << "Doom is upon us!\n";
+        //cout << "Doom is upon us!\n";
         return;
     }
-    cout << "The board is full.\n";
+    //cout << "The board is full.\n";
+    gameOver = true;
 }
 
 void placeAt(GameBoard& board, int space) {
@@ -372,8 +376,7 @@ void placeAt(GameBoard& board, int space) {
             return;
         }
     }
-    cout << "I've got a bad feeling about this.\n";
+    //cout << "I've got a bad feeling about this.\n";
     placeRandom(board, true);
 }
-
 /**/
