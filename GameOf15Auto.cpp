@@ -8,7 +8,7 @@
 // 3. Preventing loss by blocking
 // 4. Checkmate move
 // 5. Just play something
-/**/
+/*
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -87,13 +87,6 @@ int main() {
                     if (numChanges > 1) {
                         cout << "CHEATER CHEATER PUMPKIN EATER (too many moves)\n";
                     }
-                    /*
-                    for (string p : ourPieces)
-                        cout << p << " ";
-                    cout << ": ";
-                    for (string p : theirPieces)
-                        cout << p << " ";
-                    */
                     oldBoard = mainBoard;
                     //cout << "\nPondering next move...\n";
 

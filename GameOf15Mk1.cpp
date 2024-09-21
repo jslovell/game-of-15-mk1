@@ -8,7 +8,7 @@
 // 3. Preventing loss by blocking
 // 4. Checkmate move
 // 5. Just play something
-/*
+/**/
 #include <algorithm>
 #include <iostream>
 #include <vector>
@@ -27,6 +27,7 @@ vector<string> ourPieces;
 vector<string> theirPieces;
 string nextMovePiece;
 int nextMoveSpace;
+bool gameOver;
 
 // Function declarations
 void removePiece(string, vector<string>&);
@@ -39,14 +40,14 @@ void placeRandom(GameBoard&, bool);
 void placeAt(GameBoard&, int);
 
 // Main function
-int notmain() {
+int main() {
     cout << "=========================\n";
     cout << "|      JOSHUA mk1       |\n";
     cout << "| Shall we play a game? |\n";
     cout << "=========================\n\n";
 
     string input;
-    bool gameOver = false;
+    gameOver = false;
     vector<string> evenPieces = { "2", "4", "6", "8", "0" };
     vector<string> oddPieces = { "5", "3", "1", "7", "9" };
     srand(time(0));
@@ -128,8 +129,12 @@ int notmain() {
         // Case: we move first
         else if (mainBoard.toString() == "(-,-,-,-,-,-,-,-,-)") {
             if (isOdd) {
-                mainBoard.move("1", 4);
-                removePiece("1");
+                string strSet[] = { "3", "3", "1" };
+                int intSet[] = { 1, 3, 5, 7 };
+                string strRand = strSet[rand() % 3];
+                int intRand = intSet[rand() % 4];
+                mainBoard.move(strRand, intRand);
+                removePiece(strRand);
             } else {
                 mainBoard.move("8", 4);
                 removePiece("8");
@@ -230,6 +235,7 @@ int findWinSpace(GameBoard board, vector<string> playset) {
             }
         }
     }
+    return -1;
 }
 
 bool checkmateHelper(GameBoard board, vector<string> playsetAtt, vector<string> playsetDef) {
@@ -358,6 +364,7 @@ void placeRandom(GameBoard& board, bool trueRandom) {
         return;
     }
     cout << "The board is full.\n";
+    gameOver = true;
 }
 
 void placeAt(GameBoard& board, int space) {
@@ -375,5 +382,4 @@ void placeAt(GameBoard& board, int space) {
     cout << "I've got a bad feeling about this.\n";
     placeRandom(board, true);
 }
-
 /**/
