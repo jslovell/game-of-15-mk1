@@ -16,4 +16,6 @@ public:
 	void move(string, int);
 	string toString();
 	bool isGameWon();
+	int getNumPieces();
+	bool edgeAddsTo(int);
 };

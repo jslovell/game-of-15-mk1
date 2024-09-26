@@ -20,9 +20,9 @@ using std::string;
 using std::vector;
 
 // AUTO SETTINGS
-int totalGames = 10;
-string openingPieces[] = { "1", "3", "5" };
-int openingSpaces[] = { 0, 1, 4 };
+int totalGames = 20;
+//string openingPieces[] = { "1", "3" };
+//int openingSpaces[] = { 0, 4 };
 
 // Global variables
 bool isOdd;
@@ -52,13 +52,13 @@ int main() {
     cout << "=========================\n\n";
 
     vector<string> evenPieces = { "2", "4", "6", "8", "0" };
-    vector<string> oddPieces = { "5", "3", "1", "7", "9" };
+    vector<string> oddPieces = { "1", "3", "5", "7", "9" };
     vector<string> swapPieces;
     srand(time(0));
 
     // MEGA MEGA LOOP
-    for (string openPiece : openingPieces) {
-        for (int openSpace : openingSpaces) {
+    //for (string openPiece : openingPieces) {
+       //for (int openSpace : openingSpaces) {
             // MEGA LOOP
             int oddWinLoss[2] = { 0, 0 };
             int evenWinLoss[2] = { 0, 0 };
@@ -79,6 +79,24 @@ int main() {
                     for (int i = 0; i < 9; i++) {
                         if (oldBoard.get(i) != mainBoard.get(i)) {
                             numChanges++;
+                            if (oldBoard.get(i) != "-" && mainBoard.get(i) != "0") {
+                                cout << "CHEATER CHEATER PUMPKIN EATER (invalid move)\n";
+                            }
+                            // Change priorities
+                            if (isOdd) {
+                                if (mainBoard.get(i) == "6") {
+                                    if (count(ourPieces.begin(), ourPieces.end(), "9") > 0) {
+                                        removePiece("9", ourPieces);
+                                        ourPieces.insert(ourPieces.begin(), "9");
+                                    }
+                                }
+                                else if (mainBoard.get(i) == "8") {
+                                    if (count(ourPieces.begin(), ourPieces.end(), "7") > 0) {
+                                        removePiece("7", ourPieces);
+                                        ourPieces.insert(ourPieces.begin(), "7");
+                                    }
+                                }
+                            }
                         }
                     }
                     //cout << "Old: " << oldBoard.toString() << "\n";
@@ -99,8 +117,12 @@ int main() {
                     // Case: we move first
                     else if (mainBoard.toString() == "(-,-,-,-,-,-,-,-,-)") {
                         if (isOdd) {
-                            mainBoard.move(openPiece, openSpace);
-                            removePiece(openPiece);
+                            string strSet[] = { "1" };
+                            int intSet[] = { 1, 3, 5, 7 };
+                            string strRand = strSet[rand() % 1];
+                            int intRand = intSet[rand() % 4];
+                            mainBoard.move(strRand, intRand);
+                            removePiece(strRand);
                         }
                         else {
                             mainBoard.move("8", 4);
@@ -115,10 +137,12 @@ int main() {
                         removePiece(nextMovePiece);
                         //cout << "We win!\n";
                         if (isOdd) {
+                            cout << "Odd Victory\n";
                             oddWinLoss[0]++;
                             evenWinLoss[1]++;
                         }
                         else {
+                            cout << "Even Victory\n";
                             evenWinLoss[0]++;
                             oddWinLoss[1]++;
                         }
@@ -128,20 +152,19 @@ int main() {
                     // Case: possible loss
                     else if (findWinSpace(mainBoard, theirPieces) != -1) {
                         int spaceInQuestion = nextMoveSpace;
-                        if (mainBoard.get(nextMoveSpace) != "-") {
+                        if (mainBoard.get(spaceInQuestion) != "-") {
                             // They will place 0
                             placeRandom(mainBoard, true);
                             //cout << "We're doomed!\n";
                         }
                         else {
                             // Try to counter and checkmate
-                            if (findCheckmate(mainBoard, nextMoveSpace, ourPieces, theirPieces) != -1) {
+                            if (findCheckmate(mainBoard, spaceInQuestion, ourPieces, theirPieces) != -1) {
                                 mainBoard.move(nextMovePiece, nextMoveSpace);
                                 removePiece(nextMovePiece);
                                 //cout << "Blocked & checkmate!\n";
                             }
                             else {
-                                // This needs idiot proof
                                 placeAt(mainBoard, spaceInQuestion);
                                 //cout << "Block opponent.\n";
                             }
@@ -155,6 +178,20 @@ int main() {
                         //cout << "Checkmate!\n";
                     }
 
+                    // Case: possible opponent checkmate
+                    else if (findCheckmate(mainBoard, theirPieces, ourPieces) != -1) {
+                        int spaceInQuestion = nextMoveSpace;
+                        if (mainBoard.get(spaceInQuestion) != "-") {
+                            // They will place 0
+                            placeRandom(mainBoard, true);
+                            //cout << "We're soon doomed!\n";
+                        }
+                        else {
+                            placeAt(mainBoard, spaceInQuestion);
+                            //cout << "Block (soon) opponent.\n";
+                        }
+                    }
+
                     // Case: outcome uncertain
                     else {
                         placeRandom(mainBoard, false);
@@ -162,7 +199,12 @@ int main() {
                     }
 
                     // Output board with our move
-                    //cout << "Current Board: " << mainBoard.toString() << "\n\n";
+                    if (!gameOver) cout << "Current Board: " << mainBoard.toString() << "\n";
+                    else {
+                        cout << mainBoard.get(0) << mainBoard.get(1) << mainBoard.get(2) << "\n";
+                        cout << mainBoard.get(3) << mainBoard.get(4) << mainBoard.get(5) << "\n";
+                        cout << mainBoard.get(6) << mainBoard.get(7) << mainBoard.get(8) << "\n";
+                    }
 
                     // Switch sides
                     isOdd = !isOdd;
@@ -170,14 +212,15 @@ int main() {
                     ourPieces = theirPieces;
                     theirPieces = swapPieces;
                 }
+                cout << "\n";
             }
 
             // Output win loss
-            cout << "\"" << openPiece << "\" placed at " << openSpace << "\n";
+            //cout << "\"" << openPiece << "\" placed at " << openSpace << "\n";
             cout << "Odd  - " << oddWinLoss[0] << " : " << oddWinLoss[1] << " : " << (gameNumber - oddWinLoss[0] - evenWinLoss[0]) << "\n";
             cout << "Even - " << evenWinLoss[0] << " : " << evenWinLoss[1] << " : " << (gameNumber - oddWinLoss[0] - evenWinLoss[0]) << "\n";
-        }
-    }
+        //}
+    //}
 }
 
 // Function definitions
@@ -320,14 +363,38 @@ void placeRandom(GameBoard& board, bool trueRandom) {
         vector<int> goodSpaces;
         // Limit dumb moves
         if (!trueRandom) {
+            GameBoard tempBoard;
+            vector<string> tempOurPieces;
             for (int index : openSpaces) {
-                GameBoard tempBoard = board;
+                tempBoard = board;
                 tempBoard.move(piece, index);
-                vector<string> tempOurPieces = ourPieces;
+                tempOurPieces = ourPieces;
                 removePiece(piece, tempOurPieces);
                 if (findWinSpace(tempBoard, theirPieces) == -1 && findCheckmate(tempBoard, theirPieces, tempOurPieces) == -1) {
                     goodSpaces.push_back(index);
                 }
+            }
+            // Aggressive
+            vector<int> checkSpaces;
+            vector<int> aggroSpaces;
+            for (int index : goodSpaces) {
+                tempBoard = board;
+                tempBoard.move(piece, index);
+                tempOurPieces = ourPieces;
+                removePiece(piece, tempOurPieces);
+                if (findWinSpace(tempBoard, ourPieces) != -1) {
+                    aggroSpaces.push_back(index);
+                    //cout << "AGGRO " << piece << " at " << index << "\n";
+                }
+                if (findCheckmate(tempBoard, ourPieces, theirPieces) != 1) {
+                    checkSpaces.push_back(index);
+                    //cout << "CHECK " << piece << " at " << index << "\n";
+                }
+            }
+            if (aggroSpaces.size() > 0) {
+                goodSpaces = aggroSpaces;
+            } else if (checkSpaces.size() > 0) {
+                goodSpaces = checkSpaces;
             }
         } else {
             goodSpaces = openSpaces;
@@ -335,12 +402,6 @@ void placeRandom(GameBoard& board, bool trueRandom) {
         // Place something
         if (goodSpaces.size() > 0) {
             int space = goodSpaces[rand() % goodSpaces.size()];
-            board.move(piece, space);
-            removePiece(piece);
-            return;
-        }
-        else if (count(ourPieces.begin(), ourPieces.end(), "0") > 0) {
-            int space = rand() % 9;
             board.move(piece, space);
             removePiece(piece);
             return;
@@ -353,6 +414,22 @@ void placeRandom(GameBoard& board, bool trueRandom) {
         //cout << "Doom is upon us!\n";
         return;
     }
+    // Try the zero
+    else if (count(ourPieces.begin(), ourPieces.end(), "0") > 0) {
+        GameBoard tempBoard;
+        vector<string> tempOurPieces;
+        for (int index = 0; index < 9; index++) {
+            tempBoard = board;
+            tempBoard.move("0", index);
+            tempOurPieces = ourPieces;
+            removePiece("0", tempOurPieces);
+            if (findWinSpace(tempBoard, theirPieces) == -1) {
+                board.move("0", index);
+                removePiece("0");
+                return;
+            }
+        }
+    } 
     //cout << "The board is full.\n";
     gameOver = true;
 }
@@ -367,6 +444,22 @@ void placeAt(GameBoard& board, int space) {
             board.move(piece, space);
             removePiece(piece);
             return;
+        }
+    }
+    // Try the zero
+    if (count(ourPieces.begin(), ourPieces.end(), "0") > 0) {
+        GameBoard tempBoard;
+        vector<string> tempOurPieces;
+        for (int index = 0; index < 9; index++) {
+            tempBoard = board;
+            tempBoard.move("0", index);
+            tempOurPieces = ourPieces;
+            removePiece("0", tempOurPieces);
+            if (findWinSpace(tempBoard, theirPieces) == -1) {
+                board.move("0", index);
+                removePiece("0");
+                return;
+            }
         }
     }
     //cout << "I've got a bad feeling about this.\n";

@@ -72,3 +72,34 @@ bool GameBoard::isGameWon() {
 		return false;
 	}
 }
+
+int GameBoard::getNumPieces() {
+	int count = 0;
+	for (string s : board) {
+		if (s != "-") {
+			count++;
+		}
+	}
+	return count;
+}
+
+bool GameBoard::edgeAddsTo(int num) {
+	int intBoard[9];
+	for (int i = 0; i < 9; i++) {
+		if (board[i] != "-") {
+			intBoard[i] = stoi(board[i]);
+		}
+		else {
+			intBoard[i] = 0;
+		}
+	}
+	if (intBoard[0] + intBoard[1] + intBoard[2] == num ||
+		intBoard[6] + intBoard[7] + intBoard[8] == num ||
+		intBoard[0] + intBoard[3] + intBoard[6] == num ||
+		intBoard[2] + intBoard[5] + intBoard[8] == num) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
